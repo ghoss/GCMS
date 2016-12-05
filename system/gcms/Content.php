@@ -360,7 +360,7 @@ class Content
 
 	public static function store($obj)
 	{
-		$msg = array();
+		$msg = [];
 		
 		// Field validation
 		if (! in_array($obj['type'], array('text', 'html')))
@@ -499,6 +499,11 @@ class Content
 		// Attach all draft media permanently to object
 		$res = $res && DB::exec(sprintf(
 			"UPDATE media SET draft=0 WHERE parent='%s'", $name
+		));
+		
+		// Delete any stale draft media leftover from previous aborted edits
+		$res = $res && DB::exec(sprintf(
+			"DELETE FROM media WHERE draft=0 AND cdate<%d", time() - 86400
 		));
 		
 		// Check for errors
