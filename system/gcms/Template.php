@@ -111,35 +111,37 @@ class Template
 				sprintf('SELECT width,height FROM media WHERE name="%s"', $featuredImg), 
 				true, true
 			);
-			
-			self::setMeta([
-				'property' => 'og:title',
-				'content' => $post["title"]
-			]);
-			self::setMeta([
-				'property' => 'og:type',
-				'content' => 'article'
-			]);
-			self::setMeta([
-				'property' => 'og:url',
-				'content' => Settings::get("baseURL"). "/" .$post["name"]
-			]);
-			self::setMeta([
-				'property' => 'og:image',
-				'content' => implode('/', [
-					Settings::get('domainURL'), 
-					Settings::get('mediaDir'),
-					$featuredImg
-				])
-			]);
-			self::setMeta([
-				'property' => 'og:image:width',
-				'content' => $row['width']
-			]);
-			self::setMeta([
-				'property' => 'og:image:height',
-				'content' => $row['height']
-			]);	
+			if (! empty($row))
+			{			
+				self::setMeta([
+					'property' => 'og:title',
+					'content' => $post["title"]
+				]);
+				self::setMeta([
+					'property' => 'og:type',
+					'content' => 'article'
+				]);
+				self::setMeta([
+					'property' => 'og:url',
+					'content' => Settings::get("baseURL"). "/" .$post["name"]
+				]);
+				self::setMeta([
+					'property' => 'og:image',
+					'content' => implode('/', [
+						Settings::get('domainURL'), 
+						Settings::get('mediaDir'),
+						$featuredImg
+					])
+				]);
+				self::setMeta([
+					'property' => 'og:image:width',
+					'content' => $row['width']
+				]);
+				self::setMeta([
+					'property' => 'og:image:height',
+					'content' => $row['height']
+				]);
+			}
 		}
 	}
 	
