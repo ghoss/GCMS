@@ -503,7 +503,7 @@ class Content
 		
 		// Delete any stale draft media leftover from previous aborted edits
 		$res = $res && DB::exec(sprintf(
-			"DELETE FROM media WHERE draft=0 AND cdate<%d", time() - 86400
+			"DELETE FROM media WHERE draft=1 AND cdate<%d", time() - 86400
 		));
 		
 		// Check for errors
