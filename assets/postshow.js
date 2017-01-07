@@ -33,11 +33,14 @@ $(function() {
 	if (numPages != 0) makePageBar(numPages, thisPage);
 	
 	// Load Facebook SDK for sharing
-	window.fbAsyncInit = function() {FB.init({
-		appId      : '1789642194635204',
-		xfbml      : true,
-		version    : 'v2.8'
-	})};
+	window.fbAsyncInit = function() {
+		FB.init({
+			appId      : '1789642194635204',
+			xfbml      : true,
+			version    : 'v2.8'
+		});
+	    FB.AppEvents.logPageView();
+	};
 
 	(function(d, s, id){
 		var js, fjs = d.getElementsByTagName(s)[0];
