@@ -7,7 +7,7 @@
 //
 // Created: 16.11.2016 18:59:24 GMT+1
 //=============================================================================================
-// Copyright (C) 2016 by Guido Hoss
+// Copyright (C) 2016-2017 by Guido Hoss
 //
 // GCMS is free software: you can redistribute it and/or 
 // modify it under the terms of the GNU General Public License
@@ -121,12 +121,13 @@ class Media
 				if ($res)
 				{
 					// Insert entry for this file into database
+					$siteID = Settings::get('siteID');
 					DB::exec("BEGIN TRANSACTION");
 					DB::exec(sprintf(
-						"INSERT INTO media (name,parent,draft,cdate,width,height) " .
-						"VALUES ('%s','%s',%d,%d,%d,%d)",
+						"INSERT INTO media (name,parent,draft,cdate,width,height,siteID) " .
+						"VALUES ('%s','%s',%d,%d,%d,%d,%d)",
 						DB::escape($fileName), DB::escape($parent), 1, time(),
-						$iWidth, $iHeight
+						$iWidth, $iHeight, $siteID
 					));
 					DB::exec("COMMIT");
 					
@@ -189,16 +190,19 @@ class Media
 		}
 
 		$escname = DB::escape($name);
+		$siteID = Settings::get('siteID');
 		DB::exec("BEGIN TRANSACTION");
 
 		// Delete media file from database
 		DB::exec(sprintf(
-			"DELETE FROM media WHERE name='%s'", $escname
+			"DELETE FROM media WHERE (name='%s') AND (siteID=%d)",
+			$escname, $siteID
 		));
 		
 		// Delete media file from featured attribute table
 		DB::exec(sprintf(
-			"DELETE FROM attribute WHERE name='ft' and value='%s'", $escname
+			"DELETE FROM attribute WHERE (siteID=%d) AND (name='ft') AND (value='%s')",
+			$siteID, $escname
 		));
 
 		DB::exec("COMMIT");		
@@ -230,9 +234,11 @@ class Media
 		}
 
 		// Get media IDs associated with object
+		$siteID = Settings::get('siteID');
 		$media = [];
 		$rows = DB::query(sprintf(
-			"SELECT name FROM media WHERE parent='%s'", DB::escape($id)
+			"SELECT name FROM media WHERE (parent='%s') AND (siteID=%d)", 
+			DB::escape($id), $siteID
 		));
 		
 		while ($row = $rows->fetchArray(SQLITE3_ASSOC))

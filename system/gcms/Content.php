@@ -7,7 +7,7 @@
 //
 // Created: 19.08.2016 10:01:44 GMT+2
 //=============================================================================================
-// Copyright (C) 2016 by Guido Hoss
+// Copyright (C) 2016-2017 by Guido Hoss
 //
 // GCMS is free software: you can redistribute it and/or 
 // modify it under the terms of the GNU General Public License
@@ -65,9 +65,10 @@ class Content
 		{
 			// Build SQL query with bind parameters
 			$expr = implode(',', array_fill(0, $cnt_list, '?'));
-			$stmt = DB::prepare(
-				"SELECT * FROM object WHERE name IN ($expr) ORDER BY cdate DESC LIMIT :vLimit OFFSET :vOffset"
-			);
+			$siteID = Settings::get('siteID');
+			$stmt = DB::prepare(sprintf(
+				"SELECT * FROM object WHERE (name IN (%s)) AND (siteID=%d) ORDER BY cdate DESC LIMIT :vLimit OFFSET :vOffset", $expr, $siteID
+			));
 			$n = 1;
 			foreach ($list as $val)
 			{
@@ -91,7 +92,7 @@ class Content
 				// Get tags for each post
 				$taglist = [];
 				$tags = DB::query(sprintf(
-					"SELECT name FROM tag WHERE objID='%s' ORDER BY name", $objID
+					"SELECT name FROM tag WHERE (objID='%s') AND (siteID=%d) ORDER BY name", $objID, $siteID
 				));
 				while ($tag = $tags->fetchArray(SQLITE3_ASSOC))
 				{
@@ -170,8 +171,10 @@ class Content
 	public static function exists($name)
 	{
 		$escname = DB::escape($name);
+		$siteID = Settings::get('siteID');
 		$res = DB::query(sprintf(
-			"SELECT count(*) FROM object WHERE (name='%s')", $escname, $escname
+			"SELECT count(*) FROM object WHERE (name='%s') AND (siteID=%d)", 
+				$escname, $siteID
 		), true, false);
 		return ($res != 0);	
 	}
@@ -186,8 +189,10 @@ class Content
 	
 	private static function isPrivate($objID)
 	{
+		$siteID = Settings::get('siteID');
 		$check = DB::query(sprintf(
-			"SELECT objID FROM attribute WHERE objID='%s' AND name='pv'", $objID
+			"SELECT objID FROM attribute WHERE (objID='%s') AND (siteID=%d) AND (name='pv')",
+			$objID, $siteID
 		), true, false);
 		
 		return ($check == $objID);	
@@ -206,9 +211,10 @@ class Content
 		$user = User::loggedUser();
 		if ($user != '')
 		{
+			$siteID = Settings::get('siteID');
 			$check = DB::query(sprintf(
-				"SELECT objID FROM attribute WHERE objID='%s' AND name='id' AND value='%s'", 
-				$objID, $user
+				"SELECT objID FROM attribute WHERE (objID='%s') AND (siteID=%d) AND (name='id') AND (value='%s')", 
+				$objID, $siteID, $user
 			), true, false);
 			return ($check == $objID);	
 		}
@@ -259,10 +265,12 @@ class Content
 
 		// More than one tag specified; created sequence of nested SQL SELECT subqueries
 		$sql = '';
+		$siteID = Settings::get('siteID');
 
 		foreach ($taglist as $tag)
 		{
-			$sub = sprintf("SELECT objID FROM tag where name='%s'", DB::escape($tag));
+			$sub = sprintf("SELECT objID FROM tag WHERE (name='%s') AND (siteID=%d)",
+				DB::escape($tag), $siteID);
 			$sql = ($sql == '') ? $sub : "$sub AND objID in ($sql)";
 		}
 		$rows = DB::query($sql);
@@ -299,25 +307,26 @@ class Content
 	public static function delete($obj)
 	{
 		$name = DB::escape($obj);
+		$siteID = Settings::get('siteID');
 		
 		DB::exec("BEGIN TRANSACTION");
 		$res = DB::exec(sprintf(
-			"DELETE FROM object WHERE name='%s'", $name
+			"DELETE FROM object WHERE (name='%s') AND (siteID=%d)", $name, $siteID
 		));
 		
 		// Delete all tags belonging to object
 		$res = $res && DB::exec(sprintf(
-			"DELETE FROM tag where objID='%s'", $name
+			"DELETE FROM tag where (objID='%s') AND (siteID=%d)", $name, $siteID
 		));
 		
 		// Delete all attributes belonging to object
 		$res = $res && DB::exec(sprintf(
-			"DELETE FROM attribute where objID='%s'", $name
+			"DELETE FROM attribute where (objID='%s') AND (siteID=%d)", $name, $siteID
 		));
 		
 		// Find all media files belonging to object
 		$rows = DB::query(sprintf(
-			"SELECT name FROM media WHERE parent='%s'", $name
+			"SELECT name FROM media WHERE (parent='%s') AND (siteID=%d)", $name, $siteID
 		), false);
 		
 		$mediadir = Settings::get('mediaDir') . '/';
@@ -330,7 +339,7 @@ class Content
 		
 		// Delete all attached media files from database
 		$res = $res && DB::exec(sprintf(
-			"DELETE FROM media WHERE parent='%s'", $name
+			"DELETE FROM media WHERE (parent='%s') AND (siteID=%d)", $name, $siteID
 		));
 
 		// Check for errors
@@ -458,47 +467,57 @@ class Content
 		
 		// Store object in database
 		$name = DB::escape($obj['name']);
+		$siteID = Settings::get('siteID');
+		
 		DB::exec("BEGIN TRANSACTION");
 		$res = DB::exec(sprintf(
-			"REPLACE INTO object (name,type,content,title,cdate) VALUES ('%s','%s','%s','%s','%s')",
+			"REPLACE INTO object (name,type,content,title,cdate,siteID) VALUES ('%s','%s','%s','%s','%s',%d)",
 			$name,
 			DB::escape($obj['type']),
 			DB::escape($obj['content']),
 			DB::escape($obj['title']),
-			DB::escape($obj['cdate'])
+			DB::escape($obj['cdate']),
+			$siteID
 		));
 		
 		// Delete all previous tags belonging to object
 		$res = $res && DB::exec(sprintf(
-			"DELETE FROM tag where objID='%s'", $name
+			"DELETE FROM tag where (objID='%s') AND (siteID=%d)", $name, $siteID
 		));
 		
 		// Store current tags
 		foreach ($obj['tags'] as $key => $t)
 		{
 			$res = $res && DB::exec(sprintf(
-				"INSERT INTO tag (objID,name) VALUES ('%s','%s')",
-				$name, DB::escape($t)	
+				"INSERT INTO tag (objID,name,siteID) VALUES ('%s','%s',%d)",
+				$name,
+				DB::escape($t),
+				$siteID
 			));
 		}
 		
 		// Delete all previous attributes belonging to object
 		$res = $res && DB::exec(sprintf(
-			"DELETE FROM attribute where objID='%s'", $name
+			"DELETE FROM attribute where (objID='%s') AND (siteID=%d)", 
+			$name, $siteID
 		));		
 		
 		// Store current attributes
 		foreach ($obj['attributes'] as $key => $t)
 		{
 			$res = $res && DB::exec(sprintf(
-				"INSERT INTO attribute (objID,name,value) VALUES ('%s','%s','%s')",
-				$name, DB::escape($key), DB::escape($t)	
+				"INSERT INTO attribute (objID,name,value,siteID) VALUES ('%s','%s','%s',%d)",
+				$name,
+				DB::escape($key),
+				DB::escape($t),
+				$siteID
 			));
 		}
 		
 		// Attach all draft media permanently to object
 		$res = $res && DB::exec(sprintf(
-			"UPDATE media SET draft=0 WHERE parent='%s'", $name
+			"UPDATE media SET draft=0 WHERE (parent='%s') AND (siteID=%d)", 
+			$name, $siteID
 		));
 		
 		// Delete any stale draft media leftover from previous aborted edits

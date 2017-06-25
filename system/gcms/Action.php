@@ -7,7 +7,7 @@
 //
 // Created: 16.11.2016 11:20:37 GMT+1
 //=============================================================================================
-// Copyright (C) 2016 by Guido Hoss
+// Copyright (C) 2016-2017 by Guido Hoss
 //
 // GCMS is free software: you can redistribute it and/or 
 // modify it under the terms of the GNU General Public License
@@ -502,7 +502,7 @@ class Action
 	public static function logoutHelper()
 	{
 		User::invalidate();
-		setcookie(SESSION_COOKIE, '', time() - 3600, Path::get('baseDir'));
+		setcookie(SESSION_COOKIE, '', 1, Path::get('baseDir'));
 	}
 }
 

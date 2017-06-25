@@ -7,7 +7,7 @@
 //
 // Created: 16.08.2016 00:34:17 GMT+2
 //=============================================================================================
-// Copyright (C) 2016 by Guido Hoss
+// Copyright (C) 2016-2017 by Guido Hoss
 //
 // GCMS is free software: you can redistribute it and/or 
 // modify it under the terms of the GNU General Public License

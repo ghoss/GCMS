@@ -7,7 +7,7 @@
 //
 // Created: 15.08.2016 23:43:40 GMT+2
 //=============================================================================================
-// Copyright (C) 2016 by Guido Hoss
+// Copyright (C) 2016-2017 by Guido Hoss
 //
 // GCMS is free software: you can redistribute it and/or 
 // modify it under the terms of the GNU General Public License
@@ -48,7 +48,7 @@ if ($action == '')
 if (isset($_COOKIE[SESSION_COOKIE]))
 {
 	User::validate($_COOKIE[SESSION_COOKIE], $timeout);
-	if ($timeout && ($action != 'login') && ($action != 'show'))
+	if ($timeout && ($action != 'login'))
 	{
 		// The session was valid, but it timed out. Save session state and redirect to login
 		session_start();

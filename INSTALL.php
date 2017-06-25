@@ -7,7 +7,7 @@
 //
 // Created: 26.11.2016 23:19:54 GMT+1
 //=============================================================================================
-// Copyright (C) 2016 by Guido Hoss
+// Copyright (C) 2016-2017 by Guido Hoss
 //
 // GCMS is free software: you can redistribute it and/or 
 // modify it under the terms of the GNU General Public License
@@ -40,17 +40,17 @@ if (file_exists(DIR_DATA . NAME_DATABASE))
 else
 {
 	$sql = <<<'EOD'
-CREATE TABLE object(name text,type text,content text, title text, cdate date,primary key(name));
+CREATE TABLE object(name text, type text,content text, title text, cdate date, siteID integer, primary key(name,siteID));	
 CREATE INDEX object_cdate on object(cdate);
-CREATE TABLE user (username text,password text, sessionid text, exptime datetime, fullname text, timeout integer, primary key(username));
-CREATE INDEX session on user(sessionid);
-CREATE INDEX password on user(password);
-CREATE TABLE media(name text,parent text,draft integer,cdate date, width integer, height integer, primary key(name));
-CREATE INDEX media_parent on media(parent);
-CREATE TABLE tag(name text collate nocase,objID text);
-CREATE INDEX tag_name on tag(name collate nocase);
-CREATE INDEX tag_objID on tag(objID);
-CREATE TABLE attribute(objID text,name text,value text,primary key(objID,name));
+CREATE TABLE user (username text,password text, fullname text, timeout integer, primary key(username));
+CREATE INDEX user_password on user(password);
+CREATE TABLE session (username text,sessionID text,exptime datetime,primary key(sessionID));
+CREATE TABLE media(name text,parent text,draft integer,cdate date, width integer, height integer, siteID integer, primary key(name,siteID));
+CREATE INDEX media_parent on media(parent,siteID);
+CREATE TABLE tag(name text collate nocase, objID text, siteID integer);
+CREATE INDEX tag_name on tag(name collate nocase,siteID);
+CREATE INDEX tag_objID on tag(objID,siteID);
+CREATE TABLE attribute(objID text,name text,value text,siteID integer,primary key(objID,siteID,name));
 EOD;
 
 	// Setup database tables
@@ -61,21 +61,9 @@ EOD;
 	$pw = 'admin';
 	$hash = hash(AUTH_CIPHER, $user . $pw);
 	
-	// Create default user
 	DB::exec(sprintf(
-		'INSERT INTO user VALUES("%s", "%s", "", 0, "%s", %d)', 
+		'INSERT INTO user VALUES("%s", "%s", "%s", %d)', 
 		$user, $hash, 'Administrator', 600
-	));	
-
-	// Create dummy home page
-	DB::exec(sprintf(
-		'INSERT INTO object VALUES("home", "text", "Hello World", "Home Page", %d)', 
-		time()
-	));	
-
-	// Create dummy blog entry
-	DB::exec(sprintf(
-		'INSERT INTO tag VALUES("blog", "home")'
 	));	
 
 	echo "GCMS initialization successful. Admin user = '$user', password '$pw'. Please remove INSTALL.php!";

@@ -7,7 +7,7 @@
 //
 // Created: 21.08.2016 10:57:55 GMT+2
 //=============================================================================================
-// Copyright (C) 2016 by Guido Hoss
+// Copyright (C) 2016-2017 by Guido Hoss
 //
 // GCMS is free software: you can redistribute it and/or 
 // modify it under the terms of the GNU General Public License
@@ -107,7 +107,7 @@ class User
 		$timeout = false;
 		$row = DB::query(
 			sprintf(
-				"SELECT username,exptime,timeout FROM user WHERE sessionid='%s'",
+				"SELECT session.username,session.exptime,user.timeout FROM session,user WHERE (session.sessionID='%s') AND (session.username=user.username)", 
 				DB::escape($session)
 			),
 			true, true
@@ -121,15 +121,16 @@ class User
 			{
 				// Login successful
 				$user = $row['username'];
+				$timeout_val = $row['timeout'];
 				self::set('username', $user);
-				self::set('timeout', $row['timeout']);
+				self::set('timeout', $timeout_val);
 				
 				if ($expire)
 				{
-					// Update expiration time
+					// Update expiration time for all sessions of current user
 					DB::exec(sprintf(
-						"UPDATE user SET exptime=timeout+%d WHERE username='%s'",
-						$now, $user
+						"UPDATE session SET exptime=%d WHERE (username='%s') AND (exptime>%d)",
+						$now + $timeout_val, $user, $now
 					));		
 				}		
 			}
@@ -156,7 +157,7 @@ class User
 		{
 			DB::exec("BEGIN TRANSACTION");
 			DB::exec(sprintf(
-				"UPDATE user SET sessionid='', exptime=0 WHERE username='%s'",
+				"DELETE FROM session WHERE username='%s'",
 				DB::escape($user)
 			));
 			DB::exec("COMMIT");
@@ -183,7 +184,7 @@ class User
 	{
 		DB::exec("BEGIN TRANSACTION");
 		$res = DB::exec(sprintf(
-			"UPDATE user SET sessionid='',exptime=0,password='%s' WHERE password='%s'",
+			"UPDATE user SET password='%s' WHERE password='%s'",
 			DB::escape($newhash),
 			DB::escape($oldhash)
 		));
@@ -267,14 +268,15 @@ class User
 		{
 			// Login successful
 			$user = $row['username'];
+			$timeout = $row['timeout'];
 			self::set('username', $user);
-			self::set('timeout', $row['timeout']);
+			self::set('timeout', $timeout);
 			
 			// Assign new session ID
 			$sessionID = hash(AUTH_CIPHER, mt_rand());
 			DB::exec(sprintf(
-				"UPDATE user SET sessionid='%s', exptime=timeout+%d WHERE username='%s'",
-				$sessionID, time(), $user
+				"REPLACE INTO session (username,sessionID,exptime) VALUES('%s','%s',%d)",
+				$user, $sessionID, time() + $timeout
 			));
 		}
 		DB::exec("COMMIT");

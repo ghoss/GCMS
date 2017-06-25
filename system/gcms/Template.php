@@ -7,7 +7,7 @@
 //
 // Created: 17.08.2016 00:00:56 GMT+2
 //=============================================================================================
-// Copyright (C) 2016 by Guido Hoss
+// Copyright (C) 2016-2017 by Guido Hoss
 //
 // GCMS is free software: you can redistribute it and/or 
 // modify it under the terms of the GNU General Public License
@@ -358,6 +358,10 @@ class Template
 				
 			case 'AssetURL' :
 				$res = 'Settings::get("assetDir")';
+				break;
+				
+			case 'SiteAssetURL' :
+				$res = 'Settings::get("siteAssetDir")';
 				break;
 
 			case 'MediaURL' :
