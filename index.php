@@ -108,7 +108,7 @@ switch ($action)
 		break;
 	
 	case 'maintenance' :
-		$content = Content::notify("Maintenance Notice", "This site is currently undergoing maintenance.\n\nPlease visit again later.\n\nWe apologize for the inconvenience caused!");
+		$content = Content::notify(_("Maintenance Notice"), _("This site is currently undergoing maintenance.") . "\n\n" . _("Please visit again later.") . "\n\n" . _("We apologize for the inconvenience caused!"));
 		break;
 		
 	default :

@@ -78,7 +78,7 @@ class Settings
 		}
 		else
 		{
-			trigger_error("Invalid call: get('$var')");
+			trigger_error(_("Invalid call") . ": get('$var')");
 		}
 	}
 }

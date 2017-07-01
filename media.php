@@ -66,7 +66,7 @@ if (User::loggedUser() != '')
 }
 else
 {
-	$result = [0, 'Invalid user'];
+	$result = [0, _('Invalid user')];
 }
 
 // Render result

@@ -47,14 +47,14 @@ class CustomError
 	
 	public static function ErrorHandler($errno, $errstr, $errfile, $errline)
 	{
-		echo "<h1>GCMS Error</h1>";
+		echo "<h1>" . _("GCMS Error") . "</h1>";
 		echo "<p><b>$errstr</b></p><p>($errfile : $errline)</p>";
 		exit;
 	}
 
 	public static function ExceptionHandler($exception)
 	{
-		echo "<h1>GCMS Exception</h1>";
+		echo "<h1>" . _("GCMS Error") . "</h1>";
 		echo "<pre>" . print_r($exception, true) . "</pre>";
 		exit;
 	}
@@ -64,7 +64,7 @@ class CustomError
 		$error = error_get_last();
 		if ( $error["type"] == E_ERROR )
 		{
-			echo "<h1>GCMS Shutdown</h1>";
+			echo "<h1>" . _("GCMS Error") . "</h1>";
 			echo "<pre>" . print_r(array(
 				$error["type"],
 				$error["message"],

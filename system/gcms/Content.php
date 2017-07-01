@@ -374,22 +374,22 @@ class Content
 		// Field validation
 		if (! in_array($obj['type'], array('text', 'html')))
 		{
-			array_push($msg, '* Invalid content type');
+			array_push($msg, '* ' . _('Invalid content type'));
 		}
 		if (trim($obj['content']) == '')
 		{
-			array_push($msg, '* Article content is empty');
+			array_push($msg, '* ' . _('Article content is empty'));
 		}
 		if (trim($obj['title']) == '')
 		{
-			array_push($msg, '* Article title is empty');
+			array_push($msg, '* ' . _('Article title is empty'));
 		}
 		
 		// Validate post date
 		preg_match('/(\d{1,2})\.(\d{1,2})\.(\d{2,4})/', $obj['cdate'], $matches);
 		if (count($matches) != 4)
 		{
-			array_push($msg, '* Invalid post date');
+			array_push($msg, '* ' . _('Invalid post date'));
 		}
 		else
 		{
@@ -407,7 +407,7 @@ class Content
 		{
 			if ($cnt_matches != 4)
 			{
-				array_push($msg, '* Invalid post time');
+				array_push($msg, '* ' . _('Invalid post time'));
 			}
 			else
 			{
@@ -423,7 +423,7 @@ class Content
 		
 		if (! checkdate($mm, $dd, $yy))
 		{
-			array_push($msg, '* Invalid date');
+			array_push($msg, '* ' . _('Invalid date'));
 		}
 		else
 		{
@@ -446,7 +446,9 @@ class Content
 			elseif (self::exists($t))
 			{
 				// Tag collides with existing object ID
-				array_push($msg, "* Tag '$t' collides with existing object name");
+				array_push($msg, '* ' . 
+					sprintf(_("Tag '%s' collides with existing object name"), $t)
+				);
 			}
 			else
 			{
@@ -549,8 +551,9 @@ class Content
 
 	public static function error($message)
 	{
-		return self::notify("GCMS Error", "<p>$message</p>" . 
-			'<p><a href="javascript:window.history.back()">Return to previous page</a></p>'
+		return self::notify(_("GCMS Error"), "<p>$message</p>" . 
+			'<p><a href="javascript:window.history.back()">' .
+			_("Return to previous page") . '</a></p>'
 		);
 	}
 	

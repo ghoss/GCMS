@@ -43,7 +43,7 @@ class DB
 		{
 			// Open database
 			self::$db = new SQLite3(DIR_DATA . NAME_DATABASE);
-			isset(self::$db) or trigger_error("Can't open database");
+			isset(self::$db) or trigger_error(_("Can't open database"));
 			
 			// Set SQLite "WAL" mode
 			self::exec('PRAGMA journal_mode=WAL');

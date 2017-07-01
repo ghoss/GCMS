@@ -53,7 +53,7 @@ class Path
 			}
 			else
 			{
-				trigger_error('Unable to determine site name');
+				trigger_error(_('Unable to determine site name'));
 			}
 			
 			// Get script basename
@@ -130,7 +130,7 @@ class Path
 		}
 		else
 		{
-			trigger_error("Invalid call: get('$var')");
+			trigger_error(_("Invalid call") . ": get('$var')");
 		}
 	}
 }

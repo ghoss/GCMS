@@ -141,7 +141,7 @@ class Action
 		else
 		{
 			// Object does not exist, and no edit rights. Show error instead.
-			$content = Content::error("Invalid resource specified");
+			$content = Content::error(_("Invalid resource specified"));
 		}
 		return [$content, $flags];
 	}
@@ -181,7 +181,9 @@ class Action
 					}
 					else
 					{
-						$content = Content::error("Invalid resource specified for action '$action'");
+						$content = Content::error(
+							sprintf(_("Invalid resource specified for action '%s'"), $action)
+						);
 					}
 				}
 				else
@@ -192,13 +194,17 @@ class Action
 			}
 			else
 			{
-				$content = Content::error("Action '$action' not allowed for this object.");
+				$content = Content::error(
+					sprintf(_("Action '%s' not allowed for this object."), $action)
+				);
 			}
 		}
 		else
 		{
 			// Can't edit multiple objects
-			$content = Content::error("Action '$action' can only be applied to a single object.");
+			$content = Content::error(
+				sprintf(_("Action '%s' can only be applied to a single object."), $action)
+			);
 		}
 		return [$content, $flags];
 	}
@@ -221,7 +227,9 @@ class Action
 		}
 		else
 		{
-			$content = Content::error("Action '$action' not allowed.");
+			$content = Content::error(
+				sprintf(_("Action '%s' not allowed."), $action)
+			);
 		}
 		return $content;
 	}
@@ -277,18 +285,24 @@ class Action
 				}
 				else
 				{
-					$content = Content::error("Invalid resource specified for action '$action'");
+					$content = Content::error(
+						sprintf(_("Invalid resource specified for action '%s'"), $action)
+					);
 				}
 			}
 			else
 			{
-				$content = Content::error("Action '$action' not allowed for this object.");
+				$content = Content::error(
+					sprintf(_("Action '%s' not allowed for this object."), $action)
+				);
 			}
 		}
 		else
 		{
 			// Can't edit multiple objects
-			$content = Content::error("Action '$action' can only be applied to a single object.");
+			$content = Content::error(
+				sprintf(_("Action '%s' can only be applied to a single object."), $action)
+			);
 		}
 		return $content;
 	}
@@ -323,13 +337,17 @@ class Action
 			}
 			else
 			{
-				$content = Content::error("Action '$action' not allowed for this object.");
+				$content = Content::error(
+					sprintf(_("Action '%s' not allowed for this object."), $action)
+				);
 			}
 		}
 		else
 		{
 			// Can't delete multiple objects
-			$content = Content::error("Action '$action' can only be applied to a single object.");
+			$content = Content::error(
+				sprintf(_("Action '%s' can only be applied to a single object."), $action)
+			);
 		}
 		return $content;
 	}
@@ -355,7 +373,7 @@ class Action
 			{
 				// Successful login
 				setcookie(SESSION_COOKIE, $sessionID, 0, Path::get('baseDir'));
-				$msg = "You are now logged in as user '" . User::loggedUser() . "'.";
+				$msg = sprintf(_("You are now logged in as user '%s'."), User::loggedUser());
 				session_start();
 				if (isset($_SESSION['refer']))
 				{
@@ -366,14 +384,15 @@ class Action
 						$msg .= sprintf("<input type='hidden' name='%s' value='%s' />",
 							htmlspecialchars($key), htmlspecialchars($val));
 					}
-					$msg .= "<input type='submit' value='Continue' /> Click here to continue with previous request</form>";
+					$msg .= "<input type='submit' value='" . _('Continue') . "' /> " .
+						_("Click here to continue with previous request") . "</form>";
 				}					
 				session_destroy();
-				$content = Content::notify("Login Successful", $msg);		
+				$content = Content::notify(_("Login Successful"), $msg);		
 			}
 			else
 			{
-				$content = Content::error("Invalid username or password.");		
+				$content = Content::error(_("Invalid username or password."));		
 			}
 		}
 		else
@@ -416,14 +435,14 @@ class Action
 					if ($res)
 					{
 						$content = Content::notify(
-							"Password Changed", 
-							"The password was updated successfully. Please log in again."
+							_("Password Changed"), 
+							_("The password was updated successfully. Please log in again.")
 						);
 						$changed = true;		
 					}
 					else
 					{
-						$content = Content::error("You entered an invalid password.");		
+						$content = Content::error(_("You entered an invalid password."));		
 					}
 				}
 			}
@@ -439,7 +458,7 @@ class Action
 				}
 				else
 				{
-					$content = Content::error("The timeout value specified is invalid.");		
+					$content = Content::error(_("The timeout value specified is invalid."));		
 				}
 			}
 			
@@ -448,21 +467,21 @@ class Action
 			{
 				// No credentials supplied; show profile page
 				$content = Content::getDummyObject('profile');
-				$content[0]['title'] = "Profile Settings for '$user'";
+				$content[0]['title'] = sprintf(_("Profile Settings for '%s'"), $user);
 				$content[0]['type'] = 'html';
 				$content[0]['content'] = Template::render(Settings::get('profileTheme'));
 			}
 			elseif (empty($content))
 			{
 				$content = Content::notify(
-					"Settings Updated", 
-					"Your profile settings were updated successfully."
+					_("Settings Updated"), 
+					_("Your profile settings were updated successfully.")
 				);
 			}
 		}
 		else
 		{
-			$content = Content::error("No valid user session.");		
+			$content = Content::error(_("No valid user session."));		
 		}
 		return $content;
 	}
@@ -482,12 +501,12 @@ class Action
 			self::logoutHelper();
 			session_start();
 			session_destroy();
-			$content = Content::notify("User Logout", 
-				"You have been successfully logged out.");
+			$content = Content::notify(_("User Logout"), 
+				_("You have been successfully logged out."));
 		}
 		else
 		{
-			$content = Content::error("No valid user session.");		
+			$content = Content::error(_("No valid user session."));		
 		}
 		return $content;
 	}

@@ -61,7 +61,7 @@ class Media
 		// Check if the parent of this media file has been specified
 		if (! isset($_REQUEST['objectId']))
 		{
-			return [0, "Invalid request"];
+			return [0, _("Invalid request")];
 		}
 		else
 		{
@@ -83,16 +83,16 @@ class Media
 						break;
 						
 					case UPLOAD_ERR_NO_FILE:
-						$msg = 'No file received from client';
+						$msg = _('No file received from client');
 						break;
 						
 					case UPLOAD_ERR_INI_SIZE:
 					case UPLOAD_ERR_FORM_SIZE:
-						$msg = 'Exceeded filesize limit';
+						$msg = _('Exceeded filesize limit');
 						break;
 						
 					default:
-						$msg = 'Unknown error during transmission';
+						$msg = _('Unknown error during transmission');
 						break;
 				}
 				
@@ -139,7 +139,7 @@ class Media
 				}
 				else
 				{
-					$errors[] = "File storage on server failed";
+					$errors[] = _("File storage on server failed");
 				}
 				// TODO
 				// Assign URID to uploaded file and associate it with object in DB w/tmp status
@@ -149,7 +149,7 @@ class Media
 		// Check if any files were uploaded at all
 		if (empty($okfiles))
 		{
-			$errors[] = "No files were uploaded";
+			$errors[] = _("No files were uploaded");
 		}
 	
 		// Check for errors
@@ -180,7 +180,7 @@ class Media
 		// Check if the ID of the media file has been specified
 		if (! isset($_REQUEST['id']))
 		{
-			return [0, "Invalid request"];
+			return [0, _("Invalid request")];
 		}
 		else
 		{
@@ -226,7 +226,7 @@ class Media
 		// Check if object ID has been specified
 		if (! isset($_REQUEST['id']))
 		{
-			return [0, "Invalid request"];
+			return [0, _("Invalid request")];
 		}
 		else
 		{

@@ -179,7 +179,7 @@ class Template
 		$source = file_get_contents($tpl);
 		if ($source === false)
 		{
-			trigger_error("Can't read template $tpl");
+			trigger_error(sprintf(_("Can't read template '%s'"), $tpl));
 		}
 		
 		// Find meta fields {...}
@@ -196,7 +196,7 @@ class Template
 		$res = file_put_contents($tplc, $output);
 		if ($res === false)
 		{
-			trigger_error("Can't write compiled template $tplc");
+			trigger_error(sprintf(_("Can't write compiled template '%s'"), $tplc));
 		}
 	}
 	
@@ -456,7 +456,7 @@ class Template
 					$permalink = Settings::get("baseURL")."/".$post["name"];
 					$result = preg_replace(
 						'/<hr \/>.*/ms', 
-						"<a href='$permalink'>Continue Reading…</a>",
+						"<a href='$permalink'>" . _("Continue Reading") . "…</a>",
 						$result
 					);
 				}
@@ -468,7 +468,7 @@ class Template
 				break;
 			
 			default :
-				trigger_error("Unrecognized object type '$type'");
+				trigger_error(sprintf(_("Unrecognized object type '%s'"), $type));
 				break;
 		}
 		return $result;
@@ -559,7 +559,7 @@ class Template
 		}
 		else
 		{
-			trigger_error("Invalid call: get('$var')");
+			trigger_error(_("Invalid call") . ": get('$var')");
 		}
 	}
 }

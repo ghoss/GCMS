@@ -1,0 +1,220 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Language: de_DE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../../index.php:111
+msgid "Maintenance Notice"
+msgstr "Wartungshinweis"
+
+#: ../../index.php:111
+msgid "This site is currently undergoing maintenance."
+msgstr "Dieser Webauftritt wird zur Zeit &uuml;berarbeitet."
+
+#: ../../index.php:111
+msgid "Please visit again later."
+msgstr "Bitte rufen Sie die Seite sp&auml;ter nochmals auf."
+
+#: ../../index.php:111
+msgid "We apologize for the inconvenience caused!"
+msgstr "Vielen Dank f&uuml;r Ihr Verst&auml;ndnis!"
+
+#: ../../media.php:69
+msgid "Invalid user"
+msgstr "Ung&uuml;ltige Benutzerkennung"
+
+#: ../../system/gcms/Action.php:144
+msgid "Invalid resource specified"
+msgstr "Ung&uuml;ltige Ressource angegeben"
+
+#: ../../system/gcms/Action.php:185 ../../system/gcms/Action.php:289
+#, php-format
+msgid "Invalid resource specified for action '%s'"
+msgstr "Ung&uuml;ltige Ressource angegeben f&uuml;r Aktion '%s'"
+
+#: ../../system/gcms/Action.php:198 ../../system/gcms/Action.php:296
+#: ../../system/gcms/Action.php:341
+#, php-format
+msgid "Action '%s' not allowed for this object."
+msgstr "Aktion '%s' ist f&uuml;r dieses Objekt nicht erlaubt."
+
+#: ../../system/gcms/Action.php:206 ../../system/gcms/Action.php:304
+#: ../../system/gcms/Action.php:349
+#, php-format
+msgid "Action '%s' can only be applied to a single object."
+msgstr "Aktion '%s' kann nur auf ein einzelnes Objekt angewandt werden."
+
+#: ../../system/gcms/Action.php:231
+#, php-format
+msgid "Action '%s' not allowed."
+msgstr "Aktion '%s' ist nicht erlaubt."
+
+#: ../../system/gcms/Action.php:376
+#, php-format
+msgid "You are now logged in as user '%s'."
+msgstr "Sie sind nun angemeldet als Benutzer '%s'."
+
+#: ../../system/gcms/Action.php:387
+msgid "Continue"
+msgstr "Fortfahren"
+
+#: ../../system/gcms/Action.php:388
+msgid "Click here to continue with previous request"
+msgstr "Hier klicken, um die letzte Anfrage fortzusetzen"
+
+#: ../../system/gcms/Action.php:391
+msgid "Login Successful"
+msgstr "Anmeldung erfolgreich"
+
+#: ../../system/gcms/Action.php:395
+msgid "Invalid username or password."
+msgstr "Ung&uuml;ltiger Benutzername oder Kennwort."
+
+#: ../../system/gcms/Action.php:438
+msgid "Password Changed"
+msgstr "Kennwort ge&auml;ndert"
+
+#: ../../system/gcms/Action.php:439
+msgid "The password was updated successfully. Please log in again."
+msgstr "Das Kennwort wurde erfolgreich ge&auml;ndert. Bitte melden Sie sich nochmals an."
+
+#: ../../system/gcms/Action.php:445
+msgid "You entered an invalid password."
+msgstr "Sie haben ein ung&uuml;ltiges Kennwort eingegeben."
+
+#: ../../system/gcms/Action.php:461
+msgid "The timeout value specified is invalid."
+msgstr "Die eingegebene Zeitlimite ist ung&uuml;ltig."
+
+#: ../../system/gcms/Action.php:470
+#, php-format
+msgid "Profile Settings for '%s'"
+msgstr "Profil-Einstellungen f&uuml;r '%s'"
+
+#: ../../system/gcms/Action.php:477
+msgid "Settings Updated"
+msgstr "Einstellungen aktualisiert"
+
+#: ../../system/gcms/Action.php:478
+msgid "Your profile settings were updated successfully."
+msgstr "Ihre Profil-Einstellungen wurden erfolgreich aktualisiert."
+
+#: ../../system/gcms/Action.php:484 ../../system/gcms/Action.php:509
+msgid "No valid user session."
+msgstr "Ung&uuml;ltige Benutzersitzung."
+
+#: ../../system/gcms/Action.php:504
+msgid "User Logout"
+msgstr "Benutzer abgemeldet"
+
+#: ../../system/gcms/Action.php:505
+msgid "You have been successfully logged out."
+msgstr "Sie haben sich erfolgreich abgemeldet."
+
+#: ../../system/gcms/Content.php:377
+msgid "Invalid content type"
+msgstr "Ung&uuml;ltiger Inhaltstyp"
+
+#: ../../system/gcms/Content.php:381
+msgid "Article content is empty"
+msgstr "Inhalt des Eintrags ist leer"
+
+#: ../../system/gcms/Content.php:385
+msgid "Article title is empty"
+msgstr "Inhalt der Artikel&uuml;berschrift ist leer"
+
+#: ../../system/gcms/Content.php:392
+msgid "Invalid post date"
+msgstr "Ung&uuml;ltiges Ver&ouml;ffentlichungsdatum"
+
+#: ../../system/gcms/Content.php:410
+msgid "Invalid post time"
+msgstr "Ung&uuml;ltige Ver&ouml;ffentlichungszeit"
+
+#: ../../system/gcms/Content.php:426
+msgid "Invalid date"
+msgstr "Ung&uuml;ltige Datumsangabe"
+
+#: ../../system/gcms/Content.php:450
+#, php-format
+msgid "Tag '%s' kollidiert mit einem bereits bestehenden Objektnamen"
+msgstr ""
+
+#: ../../system/gcms/Content.php:554 ../../system/gcms/CustomError.php:50
+#: ../../system/gcms/CustomError.php:57 ../../system/gcms/CustomError.php:67
+msgid "GCMS Error"
+msgstr "GCMS-Systemfehler"
+
+#: ../../system/gcms/Content.php:556
+msgid "Return to previous page"
+msgstr "Zur vorhergehenden Seite zur&uuml;ckkehren"
+
+#: ../../system/gcms/DB.php:46
+msgid "Can't open database"
+msgstr "Die Datenbank kann nicht ge&ouml;ffnet werden"
+
+#: ../../system/gcms/Media.php:64 ../../system/gcms/Media.php:183
+#: ../../system/gcms/Media.php:229
+msgid "Invalid request"
+msgstr "Ung&uuml;ltige Anfrage"
+
+#: ../../system/gcms/Media.php:86
+msgid "No file received from client"
+msgstr "Es wurde keine Datei empfangen"
+
+#: ../../system/gcms/Media.php:91
+msgid "Exceeded filesize limit"
+msgstr "Die maximale Dateigr&ouml;sse wurde &uuml;berschritten"
+
+#: ../../system/gcms/Media.php:95
+msgid "Unknown error during transmission"
+msgstr "Unbekannter Fehler w&auml;hrend der &Uuml;bermittlung"
+
+#: ../../system/gcms/Media.php:142
+msgid "File storage on server failed"
+msgstr "Die Datei konnte nicht auf dem Server gespeichert werden"
+
+#: ../../system/gcms/Media.php:152
+msgid "No files were uploaded"
+msgstr "Es wurden keine Dateien &uuml;bertragen"
+
+#: ../../system/gcms/Path.php:56
+msgid "Unable to determine site name"
+msgstr "Der Name des Webauftritts kann nicht bestimmt werden"
+
+#: ../../system/gcms/Path.php:133 ../../system/gcms/Settings.php:81
+#: ../../system/gcms/Template.php:562 ../../system/gcms/User.php:311
+msgid "Invalid call"
+msgstr "Ung&uuml;ltiger Aufruf"
+
+#: ../../system/gcms/Template.php:182
+#, php-format
+msgid "Can't read template '%s'"
+msgstr "Die Vorlage '%s' kann nicht ge&ouml;ffnet werden"
+
+#: ../../system/gcms/Template.php:199
+#, php-format
+msgid "Can't write compiled template '%s'"
+msgstr "Die kompilierte Vorlage '%s' kann nicht gespeichert werden"
+
+#: ../../system/gcms/Template.php:459
+msgid "Continue Reading"
+msgstr "Weiterlesen"
+
+#: ../../system/gcms/Template.php:471
+#, php-format
+msgid "Unrecognized object type '%s'"
+msgstr "Der Objekttyp '%s' wurde nicht erkannt"
+
+#: ../../system/gcms/User.php:88
+#, php-format
+msgid "Unknown action '%s'"
+msgstr "Unbekannte Aktion '%s'"

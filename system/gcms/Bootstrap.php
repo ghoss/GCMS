@@ -3,7 +3,7 @@
 // GCMS - GUIDO'S CONTENT MANAGEMENT SYSTEM
 //=============================================================================================
 // Bootstrap.php
-// Loader for classes at startup
+// Loader for classes at startup, and language internationalization
 //
 // Created: 15.08.2016 23:43:40 GMT+2
 //=============================================================================================
@@ -28,8 +28,29 @@
 
 class Bootstrap
 {
+	// Translation table to convert language returned by browser to canonical form
+	private static $LANG = [
+		'de' => 'de_DE'
+	];
+	
 	public static function initialize()
 	{
+		// Initialize language translation
+		if (function_exists('gettext'))
+		{
+			$domain = 'gcms';
+			$locale = Locale::acceptFromHttp($_SERVER['HTTP_ACCEPT_LANGUAGE']);
+			$locale = isset(Bootstrap::$LANG[$locale]) ? Bootstrap::$LANG[$locale] : 'en_US';
+			setlocale(LC_MESSAGES, $locale);
+			bindtextdomain($domain, DIR_S . '/locale');	
+			textdomain($domain);
+		}
+		else
+		{
+			trigger_error('gettext is not supported');
+		}
+		
+		// Initialize autoloader
 		$ok = spl_autoload_register(function($class) {
 			include DIR_GCMS . $class . '.php';
 			$class::initialize();

@@ -85,7 +85,7 @@ class User
 				break;
 				
 			default :
-				trigger_error("Unknown action '$action'");
+				trigger_error(sprintf(_("Unknown action '%s'"), $action));
 				break;
 		}
 	}
@@ -308,7 +308,7 @@ class User
 		}
 		else
 		{
-			trigger_error("Invalid call: get('$var')");
+			trigger_error(_("Invalid call") . ": get('$var')");
 		}
 	}
 }
