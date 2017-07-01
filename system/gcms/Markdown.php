@@ -126,7 +126,8 @@ class Markdown extends Parsedown
 					$text = substr($arg, $p + 1);
 					
 					// Check for external vs. internal links
-					$ext = (strstr($href, '://') !== false);
+					$ext = (strstr($href, '://') !== false)
+						|| (strstr($href, 'javascript:') != false);
 				}
 				$attr['href'] = $ext ? $href : Settings::get("baseURL") . '/' . $href;
 				if ($ext)
