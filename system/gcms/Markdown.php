@@ -76,6 +76,76 @@ class Markdown extends Parsedown
 	
 	
 	//-----------------------------------------------------------------------------------------
+	// tag_image()
+	// {image:resourceID} and {thumb:resourceID} tags
+	//-----------------------------------------------------------------------------------------
+
+	private function tag_image($tag, $fullstr, $arg)
+	{
+		return [
+			'extent' => strlen($fullstr),
+			'element' => [
+				'name' => 'img',
+				'attributes' => [
+					'src' => Settings::get("mediaDir") . '/' . $arg,
+					'class' => ($tag == 'image') ?
+						'imageNormal zoomableImage' : 
+						'imageThumbnail zoomableImage',
+					'data-id' => str_replace('.', '', $arg),
+					'data-parent' => self::$postName,
+					'data-sequence' => self::$sequence ++
+				]
+			]
+		];
+	}
+	
+	
+	//-----------------------------------------------------------------------------------------
+	// tag_link()
+	// {link:url|alttext} tag
+	//-----------------------------------------------------------------------------------------
+	
+	private function tag_link($tag, $fullstr, $arg)
+	{
+		// Split argument into link and description text
+		$p = strpos($arg, '|');
+		if ($p === false)
+		{
+			$href = $text = $arg;
+			$ext = true;
+		}
+		else
+		{
+			$href = ($p > 0) ? substr($arg, 0, $p) : "#";
+			$text = substr($arg, $p + 1);
+			
+			// Check for external vs. internal links
+			$ext = (strstr($href, '://') !== false)
+				|| (strstr($href, 'javascript:') != false);
+		}
+		$attr['href'] = $ext ? $href : Settings::get("baseURL") . '/' . $href;
+		if ($ext)
+		{
+			// Open external links in a new window
+			$attr += [
+				'rel' => 'nofollow',
+				'target' => '_blank',
+				'class' => 'extlink'
+			];
+		}
+		
+		return [
+			'extent' => strlen($fullstr),
+			'element' => array(
+				'name' => 'a',
+				'text' => $text,
+				'attributes' => $attr
+			)
+		];				
+	}
+	
+	
+	//-----------------------------------------------------------------------------------------
 	// inlineTag()
 	// Does the actual tag processing and substitution work
 	//-----------------------------------------------------------------------------------------
@@ -94,59 +164,13 @@ class Markdown extends Parsedown
 		{	
 			case 'thumb' :
 			case 'image' :
-				$result = array(
-					'extent' => strlen($fullstr),
-					'element' => [
-						'name' => 'img',
-						'attributes' => [
-							'src' => Settings::get("mediaDir") . '/' . $arg,
-							'class' => ($tag == 'image') ?
-								'imageNormal zoomableImage' : 
-								'imageThumbnail zoomableImage',
-							'data-id' => str_replace('.', '', $arg),
-							'data-parent' => self::$postName,
-							'data-sequence' => self::$sequence ++
-						]
-					]
-				);
+				// Image or thumbnail
+				$result = self::tag_image($tag, $fullstr, $arg);				
 				break;
 			
 			case 'link' :
 				// HTML link to internal or external page
-				// Split argument into link and description text
-				$p = strpos($arg, '|');
-				if ($p === false)
-				{
-					$href = $text = $arg;
-					$ext = true;
-				}
-				else
-				{
-					$href = ($p > 0) ? substr($arg, 0, $p) : "#";
-					$text = substr($arg, $p + 1);
-					
-					// Check for external vs. internal links
-					$ext = (strstr($href, '://') !== false)
-						|| (strstr($href, 'javascript:') != false);
-				}
-				$attr['href'] = $ext ? $href : Settings::get("baseURL") . '/' . $href;
-				if ($ext)
-				{
-					// Open external links in a new window
-					$attr += [
-						'rel' => 'nofollow',
-						'target' => '_blank',
-						'class' => 'extlink'
-					];
-				}
-				$result = array(
-					'extent' => strlen($fullstr),
-					'element' => array(
-						'name' => 'a',
-						'text' => $text,
-						'attributes' => $attr
-					)
-				);				
+				$result = self::tag_link($tag, $fullstr, $arg);				
 				break;
 				
 			default :
