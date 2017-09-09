@@ -73,6 +73,8 @@ if ((Settings::get('maintenance') == true)
 // Action dispatcher
 //
 $flags = [];
+$render = true;
+
 switch ($action)
 {
 	case 'show' :
@@ -96,15 +98,24 @@ switch ($action)
 		break;
 
 	case 'login' :
-		$content = Action::login($request);
+		$content = Action::login();
 		break;
 
 	case 'logout' :
-		$content = Action::logout($request);
+		$content = Action::logout();
 		break;
 		
 	case 'profile' :
-		$content = Action::profile($request);
+		$content = Action::profile();
+		break;
+	
+	case 'search' :
+		$content = Action::search();
+		break;
+		
+	case 'sitemap' :
+		$content = Action::sitemap();
+		$render = false;
 		break;
 	
 	case 'maintenance' :
@@ -112,12 +123,20 @@ switch ($action)
 		break;
 		
 	default :
-		$content = Content::error("Unknown action");
+		$content = Content::error(sprintf(_("Unknown action '%s'"), $action));
 		break;
 }
 
-// Render page template
-$result = Template::render(Settings::get('siteTheme'), $content, $flags);
+if ($render)
+{
+	// Render page template
+	$result = Template::render(Settings::get('siteTheme'), $content, $flags);
+}
+else
+{
+	// Render content directly without template
+	$result = $content;
+}
 
 // Echo HTML to output
 echo $result;

@@ -15,6 +15,8 @@
 // <http://www.gnu.org/licenses/>.
 //
 // Git repository home: <https://github.com/ghoss/GCMS>
+//
+// Compression command line: uglifyjs -c -m -o postedit.min.js postedit.js
 
 
 // Event handler for image upload field
@@ -39,6 +41,12 @@ $(document).ready(function() {
 });	
 
 
+function isImage(ext)
+{
+	return (ext == 'png') || (ext == 'jpg') || (ext == 'gif');
+}
+
+
 function handleFileSelect(evt) {
 
 	// for each entry, add to formdata to later access via $_FILES["file" + i]
@@ -48,12 +56,10 @@ function handleFileSelect(evt) {
 	// Loop through all upload files
 	for (var i = 0, f; f = files[i]; i ++)
 	{
-		// Only process image files.
-		if (! f.type.match('image.*')) continue;
-		
 		var formData = new FormData();
 		formData.append(i, f);
 		formData.append("objectId", objectId);
+		formData.append("seq", i);
 		
 		var filename = escape(f.name);
 		
@@ -71,14 +77,22 @@ function handleFileSelect(evt) {
 				{
 					// Render thumbnail
 					var filename = escape(data.msg[0]['name']);
+					var ext = data.msg[0]['ext'];
+					var seq = parseInt(data.msg[0]['seq']);
+					var isImg = isImage(ext);
 					var reader = new FileReader();
 					reader.onload = (function(theFile)
 					{
 						return function(e)
 						{
-							// Render thumbnail.
-							var img = createThumbnail(e.target.result, filename);
-							if ($('.featuredImg').length == 0) setFeatured($(img));
+							// Render thumbnail
+							var img = createThumbnail(e.target.result,
+								filename, ext, seq, isImg);
+								
+							if (($('.featuredImg').length == 0) && isImg)
+							{
+								setFeatured($(img));
+							}
 						};
 					})(f);
 
@@ -210,6 +224,22 @@ function bindImageMenu()
 				break;
 		}	
     });
+    
+    // Bind the menu to any remaining attachment icons, but disable zoom function
+	$('body').on('mousedown', '.uploadIcon', function(e) {
+		switch (e.which)
+		{
+			case 1 :	
+			case 2 :
+				// Middle mouse button: ignore
+				break;
+				
+			case 3 :
+				// Right mouse button; show context menu
+    			imageMenuHandler(e, true);
+				break;
+		}	
+    });
 
 	// Override browser context menu in thumbnail upload box
 	$('#uploadBox').contextmenu(function() {
@@ -223,11 +253,27 @@ function imageMenuHandler(event, state)
     	if (state)
 		{
 			var menu = $('#imageMenu');
+			var isImg = isImage($(event.target).data('ext'));
+			menu.data('target', event.target);
+
+			// Disable non-image menu options
+			['thumb', 'image', 'feature'].forEach(function(el, idx, arr)
+			{
+				var tag = '[data-action="' + el + '"]';
+				if (isImg)
+				{
+					menu.find(tag).removeClass('nodisplay');
+				}
+				else
+				{
+					menu.find(tag).addClass('nodisplay');
+				}
+			});
+
 			menu.css({
 				'top' : event.pageY - menu.height() / 2,
 				'left': event.pageX
 			});
-			menu.data('target', event.target);
     		menu.removeClass('nodisplay');
     	}
     	else
@@ -252,6 +298,11 @@ function imageMenuAction(obj)
 		case 'image' :
 			// Insert link to image in post content
 			insertTxt('Image', name);
+			break;
+			
+		case 'link' :
+			// Insert link to file
+			insertTxt('Attach', name);
 			break;
 		
 		case 'feature' :
@@ -283,8 +334,12 @@ function getMediaList(objectId)
 				var featured = $('#featured').val();
 				for (i = 0; i < data.msg.length; i ++)
 				{
-					var filename = escape(data.msg[i]);
-					var img = createThumbnail(mediadir + '/' + filename, filename);
+					var row = data.msg[i]
+					var filename = escape(row.name);
+					var ext = row.ext;
+					var isImg = isImage(ext);
+					var img = createThumbnail(mediadir + '/' + filename, 
+						filename, ext, i, isImg);
 					if (filename == featured) img.addClass('featuredImg');
 				}
 			}
@@ -301,16 +356,54 @@ function getMediaList(objectId)
 }
 
 
-function createThumbnail(imgPath, imgName)
+function createThumbnail(imgPath, imgName, ext, seq, isImage)
 {
-	var template = $('#sampleThumbnail').clone();
-	var img = template.children('img');
+	if (isImage)
+	{
+		var template = $('#sampleThumbnail').clone();
+		var img = template.children('img');
 	
-	template.attr('id', imgName.replace('.', ''));
-	img.attr('src', imgPath);
+		template.attr('id', imgName.replace('.', ''));
+		img.attr('src', imgPath);
+	}
+	else
+	{
+		var template = $('#sampleIcon').clone();
+		var img = template.children('div');
+	
+		template.attr('id', imgName.replace('.', ''));
+		$(img).html('&nbsp;<br />' + ext);
+	}
+	
+	var children = $('#postMedia').children();
+	var numElem = children.length;
+	
+	template.attr('seq', seq);
+	// Insert thumbnail in correct order
+	if (numElem == 0)
+	{
+		// First element in thumbnail list
+		template.appendTo('#postMedia');
+	}
+	else if (seq < parseInt(children.first().attr('seq')))
+	{
+		// Prepend element to beginning of list
+		template.prependTo('#postMedia');
+	}
+	else
+	{
+		// Find correct insertion point in sorted list of previous thumbnails
+		var node = children.last();
+		while (parseInt(node.attr('seq')) > seq)
+		{
+			node = node.prev();
+		}
+		template.insertAfter(node);
+	}
+	
+	// Add some extra fields and display thumbnail
 	img.attr('title', imgName);
-	
-	template.appendTo('#postMedia');
+	img.attr('data-ext', ext);
 	template.removeClass('nodisplay');
 	return img;
 }
@@ -318,18 +411,19 @@ function createThumbnail(imgPath, imgName)
 
 function insertTxt(tag, obj)
 {
-	var txtToAdd = '{' + tag + ':' + obj + '}';
+	var txtToAdd = '{' + tag + ': ' + obj + '}';
 	var txt = document.getElementById('postContent');
-	var caretPos = txt.selectionStart,
+	var caretStartPos = txt.selectionStart,
+		caretEndPos = txt.selectionEnd,
 		textAreaTxt = txt.value;
 		
-	txt.value = textAreaTxt.substring(0, caretPos) 
+	txt.value = textAreaTxt.substring(0, caretStartPos) 
 		+ txtToAdd 
-		+ textAreaTxt.substring(caretPos);
+		+ textAreaTxt.substring(caretEndPos);
 
 	txt.focus();
-	txt.selectionStart = caretPos + txtToAdd.length;
-	txt.selectionEnd = caretPos + txtToAdd.length;
+	txt.selectionStart = caretStartPos + txtToAdd.length;
+	txt.selectionEnd = txt.selectionStart;
 	return false;
 }
 

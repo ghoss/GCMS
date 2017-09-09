@@ -80,22 +80,38 @@ class Markdown extends Parsedown
 	// {image:resourceID} and {thumb:resourceID} tags
 	//-----------------------------------------------------------------------------------------
 
-	private function tag_image($tag, $fullstr, $arg)
+	private function tag_image($tag, $arg)
 	{
-		return [
-			'extent' => strlen($fullstr),
-			'element' => [
-				'name' => 'img',
-				'attributes' => [
-					'src' => Settings::get("mediaDir") . '/' . $arg,
-					'class' => ($tag == 'image') ?
-						'imageNormal zoomableImage' : 
-						'imageThumbnail zoomableImage',
-					'data-id' => str_replace('.', '', $arg),
-					'data-parent' => self::$postName,
-					'data-sequence' => self::$sequence ++
-				]
+		// Get image ID and optional caption
+		$argList = explode('|', $arg);
+		$imgID = trim($argList[0]);
+		$caption = isset($argList[1]) ? trim($argList[1]) : '';
+		
+		$imgMarkup = $this->element([
+			'name' => 'img',
+			'attributes' => [
+				'src' => implode('/', [
+					Settings::get("domainURL"),
+					Settings::get("mediaDir"),
+					$imgID
+				]),
+				'class' => ($tag == 'image') ?
+					'imageNormal zoomableImage' : 
+					'imageThumbnail zoomableImage',
+				'alt' => ($caption != '') ? $caption : $imgID,
+				'title' => $caption,
+				'data-id' => str_replace('.', '', $imgID),
+				'data-parent' => self::$postName,
+				'data-sequence' => self::$sequence ++
 			]
+		]);
+		
+		// Compose image and associated caption (optional)
+		$markup = $imgMarkup;
+		if ($caption != '') $markup .= "<em>$caption</em>";
+		
+		return [
+			'markup' => "<div class='imageContainer'>$markup</div>"
 		];
 	}
 	
@@ -105,7 +121,7 @@ class Markdown extends Parsedown
 	// {link:url|alttext} tag
 	//-----------------------------------------------------------------------------------------
 	
-	private function tag_link($tag, $fullstr, $arg)
+	private function tag_link($tag, $arg)
 	{
 		// Split argument into link and description text
 		$p = strpos($arg, '|');
@@ -135,13 +151,67 @@ class Markdown extends Parsedown
 		}
 		
 		return [
-			'extent' => strlen($fullstr),
-			'element' => array(
+			'element' => [
 				'name' => 'a',
 				'text' => $text,
 				'attributes' => $attr
-			)
+			]
 		];				
+	}
+	
+
+	//-----------------------------------------------------------------------------------------
+	// tag_map()
+	// {map:lat,long,zoom} OpenTopoMap integration
+	//-----------------------------------------------------------------------------------------
+
+	private function tag_map($tag, $arg)
+	{
+		// Determine map coordinates
+		list($lat, $long, $zoom) = explode(',', $arg);
+		return [
+			'element' => [
+				'name' => 'script',
+				'text' => sprintf("mapDisplay('%s',%s,%s,%s);", 
+					self::$postName, $lat, $long, $zoom)
+			]
+		];				
+	}
+	
+	
+	//-----------------------------------------------------------------------------------------
+	// tag_marker()
+	// {marker:lat,long,text} OpenTopoMap waypoint marker
+	// Must occur after map definition
+	//-----------------------------------------------------------------------------------------
+
+	private function tag_marker($tag, $arg)
+	{
+		// Determine map coordinates
+		list($lat, $long, $text) = explode(',', $arg);
+		return [
+			'element' => [
+				'name' => 'script',
+				'text' => sprintf("mapMarker(%s,%s,'%s');", $lat, $long, $text)
+			]
+		];				
+	}
+	
+	
+	//-----------------------------------------------------------------------------------------
+	// tag_gpx()
+	// {gpx:resourceID} OpenTopoMap GPX track overlay
+	// Must occur after map definition
+	//-----------------------------------------------------------------------------------------
+
+	private function tag_gpx($tag, $arg)
+	{
+		return [
+			'element' => [
+				'name' => 'script',
+				'text' => sprintf("mapTrack('%s')", Settings::get("mediaDir") . '/' . $arg)
+			]
+		];						
 	}
 	
 	
@@ -165,24 +235,40 @@ class Markdown extends Parsedown
 			case 'thumb' :
 			case 'image' :
 				// Image or thumbnail
-				$result = self::tag_image($tag, $fullstr, $arg);				
+				$result = self::tag_image($tag, $arg);				
 				break;
 			
 			case 'link' :
 				// HTML link to internal or external page
-				$result = self::tag_link($tag, $fullstr, $arg);				
+				$result = self::tag_link($tag, $arg);				
 				break;
+			
+			case 'map' :
+				// OpenTopoMap window
+				$result = self::tag_map($tag, $arg);	
+				break;			
 				
+			case 'marker' :
+				// OpenTopoMap window
+				$result = self::tag_marker($tag, $arg);	
+				break;			
+				
+			case 'gpx' :
+				// OpenTopoMap GPX track overlay
+				$result = self::tag_gpx($tag, $arg);
+				break;
+
 			default :
-				$result = array(
-					'extent' => strlen($fullstr),
-					'element' => array(
+				$result = [
+					'element' => [
 						'name' => 'b',
 						'text' => "Tag Error: '$tag'"
-					)
-				);
+					]
+				];
 				break;				
 		}
+		
+		$result['extent'] = strlen($fullstr);
 		return $result;
 	}
 }

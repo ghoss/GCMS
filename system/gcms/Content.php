@@ -56,7 +56,7 @@ class Content
 	// offset :	Starting position (for pagination)
 	//-----------------------------------------------------------------------------------------
 
-	public static function getObjectData($list, $limit, $offset)
+	public static function getObjectData($list, $limit = NULL, $offset = NULL)
 	{
 		$result = [];
 		
@@ -66,19 +66,31 @@ class Content
 			// Build SQL query with bind parameters
 			$expr = implode(',', array_fill(0, $cnt_list, '?'));
 			$siteID = Settings::get('siteID');
-			$stmt = DB::prepare(sprintf(
-				"SELECT * FROM object WHERE (name IN (%s)) AND (siteID=%d) ORDER BY cdate DESC LIMIT :vLimit OFFSET :vOffset", $expr, $siteID
-			));
+			
+			// Basic SQL statement
+			$sql = "SELECT * FROM object WHERE (name IN (%s)) AND (siteID=%d) ORDER BY cdate DESC";		
+			if (! is_null($limit))
+			{
+				// Statement with LIMIT and OFFSET
+				$sql .= ' LIMIT :vLimit OFFSET :vOffset';
+			}
+			
+			// Prepare statement
+			$stmt = DB::prepare(sprintf($sql, $expr, $siteID));
+			if (! is_null($limit))
+			{					
+				// Bind limit and offset parameters
+				DB::bind($stmt, ':vLimit', $limit);
+				DB::bind($stmt, ':vOffset', $offset);
+			}
+			
+			// Bind remaining parameters
 			$n = 1;
 			foreach ($list as $val)
 			{
 				DB::bind($stmt, $n, $val);
 				$n ++;
 			}
-			
-			// Bind limit and offset parameters
-			DB::bind($stmt, ':vLimit', $limit);
-			DB::bind($stmt, ':vOffset', $offset);
 			
 			// Execute prepared statement
 			$rows = DB::execStatement($stmt);
@@ -131,10 +143,7 @@ class Content
 
 	public static function getRandomID()
 	{
-		return strtr(
-			base64_encode(crc32(time().mt_rand())),
-			array('+' => '', '=' => '')
-		);
+		return hash('crc32b', time().mt_rand(), false);
 	}
 
 
@@ -182,17 +191,20 @@ class Content
 	
 	//-----------------------------------------------------------------------------------------
 	// isPrivate()
-	// Checks if the object with the given name is marked as private
+	// Checks if the object with the given name is marked as private OR non-searchable.
 	//
-	// name : name of object
+	// objID : name of object
+	// hideFromSearch : will ignore entry if NR flag is set
 	//-----------------------------------------------------------------------------------------
 	
-	private static function isPrivate($objID)
+	private static function isPrivate($objID, $hideFromSearch = false)
 	{
 		$siteID = Settings::get('siteID');
 		$check = DB::query(sprintf(
-			"SELECT objID FROM attribute WHERE (objID='%s') AND (siteID=%d) AND (name='pv')",
-			$objID, $siteID
+			"SELECT objID FROM attribute WHERE (objID='%s') AND (siteID=%d) AND " .
+				"((name='pv') OR %s)",
+			$objID, $siteID,
+			$hideFromSearch ? "(name='nr')" : "0"
 		), true, false);
 		
 		return ($check == $objID);	
@@ -226,6 +238,84 @@ class Content
 	
 	
 	//-----------------------------------------------------------------------------------------
+	// addPublicPost()
+	// Adds the specified post to the result array only if it is public
+	//
+	// objID : ID of post
+	// result : Reference to result array
+	// hideFromSearch: TRUE if entries with "norobots" flag should be ignored
+	//-----------------------------------------------------------------------------------------
+
+	private static function addPublicPost($objID, &$result, $hideFromSearch = false)
+	{
+		// Check if this is a private post
+		if (self::isPrivate($objID, $hideFromSearch))
+		{
+			if (self::isUserPost($objID))
+			{
+				$result[] = $objID;
+			}
+		}
+		else{
+			$result[] = $objID;
+		}
+	}
+	
+	
+	//-----------------------------------------------------------------------------------------
+	// getAllPosts()
+	// Return all readable posts in database (to create a sitemap)
+	//-----------------------------------------------------------------------------------------
+	
+	public static function getAllPosts()
+	{
+		$result = [];
+		$rows = DB::query(sprintf(
+			"SELECT name FROM object WHERE (siteID=%d)",
+			Settings::get('siteID')
+		));
+
+		// Convert query result to array
+		while ($row = $rows->fetchArray(SQLITE3_ASSOC))
+		{
+			self::addPublicPost($row['name'], $result);
+		}
+		return $result;
+	}
+	
+	
+	//-----------------------------------------------------------------------------------------
+	// findFullText()
+	// Finds posts according to a specific full text query
+	//
+	// query :	Full text query to be matched
+	//-----------------------------------------------------------------------------------------
+	
+	public static function findFullText($query)
+	{
+		$result = [];
+		
+		// Check for empty query
+		$query = trim($query);
+		if ($query != '')
+		{
+			$rows = DB::query(sprintf(
+				"SELECT name FROM object WHERE (siteID=%d) AND (content LIKE '%%%s%%')",
+				Settings::get('siteID'),
+				DB::escape($query)
+			));
+
+			// Convert query result to array
+			while ($row = $rows->fetchArray(SQLITE3_ASSOC))
+			{
+				self::addPublicPost($row['name'], $result, true);
+			}
+		}
+		return $result;
+	}
+	
+	
+	//-----------------------------------------------------------------------------------------
 	// find()
 	// Finds posts matching specified tags or ID
 	//
@@ -249,16 +339,7 @@ class Content
 			if (self::exists($id))
 			{
 				// An object with the same name as this tag exists. Return object's ID.
-				if (self::isPrivate($id))
-				{
-					if (self::isUserPost($id))
-					{
-						$result[] = $id;
-					}
-				}
-				else{
-					$result[] = $id;
-				}
+				self::addPublicPost($id, $result);
 				return $result;
 			}
 		}
@@ -278,19 +359,7 @@ class Content
 		// Convert query result to array
 		while ($row = $rows->fetchArray(SQLITE3_ASSOC))
 		{
-			$objID = $row['objID'];
-			
-			// Check if this is a private post
-			if (self::isPrivate($objID))
-			{
-				if (self::isUserPost($objID))
-				{
-					$result[] = $objID;
-				}
-			}
-			else{
-				$result[] = $objID;
-			}
+			self::addPublicPost($row['objID'], $result);
 		}
 		return $result;
 	}
@@ -438,7 +507,7 @@ class Content
 		// Validate tag list
 		foreach ($obj['tags'] as $key => $t)
 		{
-			$t = preg_replace("/[^a-zA-Z0-9_aöüÄÖÜ-]/", "", $t);
+			$t = preg_replace("/[^a-zA-Z0-9_äöüÄÖÜß-]/", "", $t);
 			if ($t == '')
 			{
 				unset($obj['tags'][$key]);

@@ -85,6 +85,19 @@ class Template
 	
 	
 	//-----------------------------------------------------------------------------------------
+	// getMeta()
+	// Gets the previously defined HTML meta data with the specified key
+	//
+	// prop :		Name of meta property to get
+	//-----------------------------------------------------------------------------------------
+	
+	public static function getMeta($prop)
+	{
+		return self::$meta[$prop][2];
+	}
+
+
+	//-----------------------------------------------------------------------------------------
 	// metaFromPost()
 	// Determine and set meta data from specified post
 	//
@@ -98,7 +111,7 @@ class Template
 		{
 			self::setMeta([
 				'name' => 'ROBOTS', 
-				'content' => 'NOINDEX, FOLLOW'
+				'content' => 'NOINDEX'
 			]);
 		}
 		
@@ -288,6 +301,21 @@ class Template
 				$var = false;
 				break;
 
+			case 'if:Posts' :
+				$res = 'if (count(Template::get("content")) > 0):';
+				$var = false;
+				break;
+
+			case 'if:Mobile' :
+				$res = 'if (Settings::get("mobile")):';
+				$var = false;
+				break;
+				
+			case 'if:FeaturedImage' :
+				$res = 'if (isset($post["attributes"]["ft"])):';
+				$var = false;
+				break;
+
 			case 'if:Debug' :
 				$res = 'if (Settings::get("debug")):';
 				$var = false;
@@ -308,9 +336,12 @@ class Template
 			case '/if:PostDate' :
 			case '/if:Private' :
 			case '/if:Tags' :
+			case '/if:Posts' :
 			case '/if:NoRobots' :
 			case '/if:Comments' :
 			case '/if:Sticky' :
+			case '/if:Mobile' :
+			case '/if:FeaturedImage' :
 			case '/if:Debug' :
 				$res = 'endif;';
 				$var = false;
@@ -331,7 +362,12 @@ class Template
 			case 'Markup' :
 				$res = '$post["content"]';
 				break;
-				
+			
+			case 'Abstract' :
+				$res = 'isset($post["attributes"]["ab"]) ?
+					htmlspecialchars($post["attributes"]["ab"]) : ""';
+				break;
+								
 			case 'Tag' :
 				$res = '$tag';
 				break;
@@ -347,6 +383,11 @@ class Template
 			case 'PostTime' :
 				$res = 'strftime("%H:%M:%S", $post["cdate"])';
 				break;
+				
+			case 'PostDateTime' :
+				// DateTime in ISO 8601 format
+				$res = 'date("c", $post["cdate"])';
+				break;
 
 			case 'Site' :
 				$res = "Path::get('site')";
@@ -357,15 +398,15 @@ class Template
 				break;
 				
 			case 'AssetURL' :
-				$res = 'Settings::get("assetDir")';
+				$res = 'Settings::get("domainURL")."/".Settings::get("assetDir")';
 				break;
 				
 			case 'SiteAssetURL' :
-				$res = 'Settings::get("siteAssetDir")';
+				$res = 'Settings::get("domainURL")."/".Settings::get("siteAssetDir")';
 				break;
 
 			case 'MediaURL' :
-				$res = 'Settings::get("mediaDir")';
+				$res = 'Settings::get("domainURL")."/".Settings::get("mediaDir")';
 				break;
 
 			case 'BaseURL' :
@@ -406,6 +447,16 @@ class Template
 			
 			case 'FeaturedImage' :
 				$res = 'isset($post["attributes"]["ft"]) ? $post["attributes"]["ft"] : ""';
+				break;
+				
+			case 'FeaturedImageWidth' :
+				$res = '$x = Template::getMeta("og:image:width"); echo is_null($x)?0:$x;';
+				$var = false;
+				break;
+				
+			case 'FeaturedImageHeight' :
+				$res = '$x = Template::getMeta("og:image:height"); echo is_null($x)?0:$x;';
+				$var = false;
 				break;
 				
 			case 'Timeout' :
@@ -525,6 +576,7 @@ class Template
 		self::$data['content'] = $content;
 		self::$data['count'] = count($content);
 		self::$data['flags'] = $flags;
+		self::$data['meta'] = self::$meta;
 		include $tplc;
 		return ob_get_clean();
 	}

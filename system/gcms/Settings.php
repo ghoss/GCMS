@@ -26,6 +26,7 @@
 // Git repository home: <https://github.com/ghoss/GCMS>
 //=============================================================================================
 
+require_once(DIR_FRAMEWORK . 'Mobile_Detect.php');
 
 class Settings
 {
@@ -54,11 +55,16 @@ class Settings
 				trigger_error("Site '$site' not configured");
 			}			
 			$domain = "http://$site";
+			$basedir = Path::get('baseDir');
 			self::$data = $SITE_CONFIG[$site];
-			self::$data['domainURL'] = $domain;
+			self::$data['domainURL'] = $domain . $basedir;
 			self::$data['baseURL'] = $domain . Path::get('baseURL');
-			self::$data['baseDir'] = Path::get('baseDir');
+			self::$data['baseDir'] = $basedir;
 			self::$data['version'] = GCMS_VERSION;
+			
+			// Check if site called from a mobile browser
+			$browser = new Mobile_Detect;
+			self::$data['mobile'] = $browser->isMobile();
 			
 			self::$instance = true;
 		}

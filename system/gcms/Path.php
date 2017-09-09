@@ -106,12 +106,7 @@ class Path
 		$str = str_replace(array('[\', \']'), '', $str);
 		$str = preg_replace('/\[.*\]/U', '', $str);
 		$str = preg_replace('/&(amp;)?#?[a-z0-9]+;/i', '-', $str);
-		$str = htmlentities($str, ENT_COMPAT, 'utf-8');
-		$str = preg_replace(
-			'/&([a-z])(acute|uml|circ|grave|ring|cedil|slash|tilde|caron|lig|quot|rsquo);/i',
-			'\\1', $str
-		);
-		$str = preg_replace(array('/[^a-z0-9]/i', '/[-]+/') , '-', $str);
+		$str = preg_replace(array('/[^a-z0-9äöüÄÖÜß]/i', '/[-]+/') , '-', $str);
 		
 		return strtolower(trim($str, '-'));		
 	}

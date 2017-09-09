@@ -381,8 +381,12 @@ class Action
 					$msg .= sprintf("<form method='POST' action='%s'>", $_SESSION['request']);
 					foreach ($_SESSION['data'] as $key => $val)
 					{
-						$msg .= sprintf("<input type='hidden' name='%s' value='%s' />",
-							htmlspecialchars($key), htmlspecialchars($val));
+						// Ignore arrays in value (e.g. attributes) for now
+						if (! is_array($val))
+						{
+							$msg .= sprintf("<input type='hidden' name='%s' value='%s' />",
+								htmlspecialchars($key), htmlspecialchars($val));
+						}
 					}
 					$msg .= "<input type='submit' value='" . _('Continue') . "' /> " .
 						_("Click here to continue with previous request") . "</form>";
@@ -400,7 +404,7 @@ class Action
 			// No credentials supplied; show login page
 			$content = Content::getDummyObject('login');
 			$content[0]['title'] = isset($_SESSION['refer']) ? 
-				"Session Expired" : "User Login";
+				_("Session Expired") : _("User Login");
 			$content[0]['type'] = 'html';
 			$content[0]['content'] = Template::render(Settings::get('loginTheme'));
 		}
@@ -484,6 +488,64 @@ class Action
 			$content = Content::error(_("No valid user session."));		
 		}
 		return $content;
+	}
+
+
+	//-----------------------------------------------------------------------------------------
+	// search()
+	//
+	// Implementation of action "search".
+	//-----------------------------------------------------------------------------------------
+
+	public static function search()
+	{
+		$content = Content::getDummyObject('search');
+		$content[0]['title'] = _("Search by Keyword");
+		$content[0]['type'] = 'html';
+		
+		// Check if a query string was entered 
+		$flags = [];
+		$query = isset($_POST['query']) ? $_POST['query'] : '';
+		if ($query == '')
+		{
+			// Query was entered, setup template to display search results
+			$flags['singlePost'] = 1;
+			$result = [];
+		}
+		else
+		{
+			// Execute full-text search
+			$objects = Content::findFullText($query);
+			$result = Content::getObjectData($objects);
+		}
+				
+		// Render search form with optional results	
+		$content[0]['content'] = Template::render(Settings::get('searchTheme'), 
+			$result, $flags);
+		return $content;
+	}
+	
+
+	//-----------------------------------------------------------------------------------------
+	// sitemap()
+	//
+	// Implementation of action "sitemap". Creates a sitemap for search engines.
+	//-----------------------------------------------------------------------------------------
+
+	public static function sitemap()
+	{
+		$objects = Content::getAllPosts();
+		$baseURL = Settings::get('baseURL');
+		$xml = '<?xml version="1.0" encoding="UTF-8"?>' .
+			'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+			
+		foreach ($objects as $url)
+		{
+			$xml .= '<url><loc>' . $baseURL . '/' . $url . '</loc></url>';
+		}
+		
+		$xml .= '</urlset>';
+		return $xml;
 	}
 
 

@@ -15,9 +15,12 @@
 // <http://www.gnu.org/licenses/>.
 //
 // Git repository home: <https://github.com/ghoss/GCMS>
+//
+// Compression command line: uglifyjs -c -m -o postshow.min.js postshow.js
 
 
 var slideShow = [];
+var map;
 
 // jQuery initialization
 $(function() {
@@ -84,21 +87,21 @@ function makePageBar(numPages, thisPage)
 		}
 	}
 	
-	if (thisPage > 4)
+	if (thisPage > 3)
 	{
-		startp = thisPage - 2;
+		startp = thisPage - 1;
 		addPage(1);
 		addPage(0);
 	}
-	if (thisPage < numPages - 4)
+	if (thisPage < numPages - 2)
 	{
-		endp = thisPage + 2;
+		endp = thisPage + 1;
 	}	
 	for (var i = startp; i <= endp; i ++)
 	{
 		addPage(i);
 	}
-	if (thisPage < numPages - 4)
+	if (thisPage < numPages - 2)
 	{
 		addPage(0);
 		addPage(numPages);
@@ -125,9 +128,12 @@ function zoomImageHandler()
 function zoomImage(thisImg)
 {
 	var imgBox = $('#imageBoxSrc');
+	var title = thisImg.attr('title');
 	
 	// Set image source URL
 	imgBox.attr('src', thisImg.attr('src'));
+	imgBox.attr('title', title);
+	$('#imageCaption').text(title);
 	
 	// Check for previous and next images in slideshow sequence
 	var parent = thisImg.data('parent'); 
@@ -151,4 +157,41 @@ function zoomImage(thisImg)
 
 	$('#backdrop').removeClass('nodisplay');
 	return false;
+}
+
+
+function mapDisplay(pageId, latc, longc, zoom)
+{
+	document.write('<div id="map_' + pageId + '" class="map"></div>');
+	map = L.map('map_' + pageId).setView([latc, longc], zoom);
+	L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    	attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+	}).addTo(map);
+}
+
+
+function mapMarker(latc, longc, text)
+{
+	L.marker([latc, longc]).addTo(map).bindPopup(text).openPopup();
+}
+
+
+function mapTrack(gpxfile)
+{
+	new L.GPX(gpxfile, {
+		async: true,
+		marker_options: {
+			startIconUrl: '', 
+			endIconUrl: '', 
+			shadowUrl: ''
+		}, 
+		gpx_options: {
+			parseElements: ['track']
+		}, 
+		polyline_options: {
+			color: "#ff0000"
+		}
+	}).on('loaded', function(e) {
+		map.fitBounds(e.target.getBounds());
+	}).addTo(map);
 }

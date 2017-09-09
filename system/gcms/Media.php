@@ -109,7 +109,7 @@ class Media
 				list($iWidth, $iHeight) = getimagesize($fileTempName);
 				
 				// Assign a unique filename for server storage
-				$ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+				$ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 				$fileName = Content::getRandomID() . ".$ext";
 
 				// Move the file from temp storage to the media directory
@@ -134,7 +134,9 @@ class Media
 					// File info to be passed back to Ajax caller
 					$okfiles[] = [
 						'index' => $index,
-						'name' => $fileName
+						'name' => $fileName,
+						'ext' => $ext,
+						'seq' => $_REQUEST['seq']
 					];
 				}
 				else
@@ -243,7 +245,10 @@ class Media
 		
 		while ($row = $rows->fetchArray(SQLITE3_ASSOC))
 		{
-			$media[] = $row['name'];
+			$media[] = [
+				'name' => $row['name'],
+				'ext' => pathinfo($row['name'], PATHINFO_EXTENSION)
+			];
 		}
 
 		return [1, $media];
